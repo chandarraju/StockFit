@@ -8,6 +8,8 @@ from TwitterAPI import TwitterAPI
 import sys
 import codecs
 
+import _mysql
+
 class TweetSearch:
     
     consumerKey = ""
@@ -22,11 +24,19 @@ class TweetSearch:
     def __init__(self):
         self.consumerKey = "4Ioh55KdJtNPtQkQfRqXoTw7L"
         self.consumerSecret = "TJjIfThmPwzDLYx1y6zMIFGe6kBFPVA9FYZxfgVtc9YHfq4J4N"
+        
+        con = _mysql.connect('stockfit.ccd1gekitlko.us-west-2.rds.amazonaws.com', 'stockfit', 'stocksfit', 'StockFit')
+        
+        con.query("SELECT distinct cusip from stk_company")
+        result = con.use_result()
+        
+        print (result.fetch_row())
+        
     
     def fetch(self):
         
         api = TwitterAPI(self.consumerKey, self.consumerSecret, self.AccessKey, self.AccessToken, auth_type='oAuth2')
-        r = api.request('search/tweets', {'q': 'AAPL', 'count':100, 'result_type': 'recent'})
+        r = api.request('search/tweets', {'q': 'AAPL', 'count':10, 'result_type': 'recent'})
         
         for item in r:
 #            print(item['text'].encode("utf-8") if 'text' in item else item + '\n')
