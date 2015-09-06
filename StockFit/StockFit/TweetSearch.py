@@ -2,6 +2,9 @@
 Created on Aug 19, 2015
 
 @author: ChandarRaju
+
+This program reads company details from AWS database,
+and for each company, searches tweets from Twitter and puts them to database
 '''
 
 from TwitterAPI import TwitterAPI
