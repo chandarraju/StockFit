@@ -1,8 +1,8 @@
-import pyodbc
-
 import pandas as pd
 from datetime import timedelta
 import math
+
+import _mysql
 
 # import numpy as np
 # from pandas.io.data import DataReader
@@ -17,20 +17,22 @@ class Correlation:
     correlationNeg = {}
 
     cusip=23135106
+    
+    con = _mysql.connect('stockfit.ccd1gekitlko.us-west-2.rds.amazonaws.com', 'stockfit', 'stocksfit', 'StockFit')
+    
+    
 
-    cnxn = pyodbc.connect('DRIVER={SQL Server}; SERVER=QTDFPDBDV01.ciqdev.com; DATABASE=TweetVestors; UID=MissionPossible2015; PWD=Team2')
-    cursor = cnxn.cursor()
-
-    cursor.execute("select distinct DATE from [TweetVestors].[dbo].[StockDataHourly_tbl] where Cusip = ? and Date > '2015-07-07 08:00:00.000' order by DATE", cusip)
-    dateRows= cursor.fetchall()
+    con.query("select distinct DATE from [StockDataHourly_tbl] where Cusip = ? and Date > '2015-07-07 08:00:00.000' order by DATE", cusip)
+    dateRows= con.use_result()
 
     for eachDate in dateRows:
 
         newDate = eachDate.DATE - timedelta(days=4)
 
-        cursor.execute("select * from [TweetVestors].[dbo].[TweetStatsHourly_tbl] where Cusip = ? and date <= ? and date >=?", cusip, eachDate.DATE, newDate)
-
-        rows = cursor.fetchall()
+        con.query("select * from [TweetVestors].[dbo].[TweetStatsHourly_tbl] where Cusip = ? and date <= ? and date >=?", cusip, eachDate.DATE, newDate)
+        result = con.use_result()
+        
+        rows = result.fetchall()
         Rating = {}
         TotalTweets = {}
         PositiveTweets = {}
@@ -42,9 +44,9 @@ class Correlation:
             PositiveTweets[x.Date] = x.PositiveTweets
             NegativeTweets[x.Date] = x.NegativeTweets
 
-        cursor.execute("select * from [TweetVestors].[dbo].[StockDataHourly_tbl] where Cusip = ?", cusip)
+        con.query("select * from [TweetVestors].[dbo].[StockDataHourly_tbl] where Cusip = ?", cusip)
 
-        stockRows = cursor.fetchall()
+        stockRows = con.use_result()
         StockPrice = {}
 
         for x in stockRows:
@@ -64,21 +66,21 @@ class Correlation:
 
     for cd in correlationData:
         if not math.isnan(correlationData[cd]):
-            cursor.execute("insert into Correlation_tbl(cusip, date, PriceToRating) values (?, ?, ?)", cusip, cd, round(correlationData[cd], 3))
-            cnxn.commit()
+            con.execute("insert into Correlation_tbl(cusip, date, PriceToRating) values (?, ?, ?)", cusip, cd, round(correlationData[cd], 3))
+            con.commit()
 
     for cdTot in correlationTotal:
         if not math.isnan(correlationTotal[cdTot]):
-            cursor.execute("update Correlation_tbl set PriceToTotal = ? where cusip = ? and date = ?", round(correlationTotal[cdTot], 3), cusip, cdTot)
-            cnxn.commit()
+            con.execute("update Correlation_tbl set PriceToTotal = ? where cusip = ? and date = ?", round(correlationTotal[cdTot], 3), cusip, cdTot)
+            con.commit()
 
     for cdPos in correlationPos:
         if not math.isnan(correlationPos[cdPos]):
-            cursor.execute("update Correlation_tbl set PriceToPositive = ? where cusip = ? and date = ?", round(correlationPos[cdPos], 3), cusip, cdPos)
-            cnxn.commit()
+            con.execute("update Correlation_tbl set PriceToPositive = ? where cusip = ? and date = ?", round(correlationPos[cdPos], 3), cusip, cdPos)
+            con.commit()
 
     for cdNeg in correlationNeg:
         if not math.isnan(correlationNeg[cdNeg]):
-            cursor.execute("update Correlation_tbl set PriceToNegative = ? where cusip = ? and date = ?", round(correlationNeg[cdNeg], 3), cusip, cdNeg)
-            cnxn.commit()
+            con.execute("update Correlation_tbl set PriceToNegative = ? where cusip = ? and date = ?", round(correlationNeg[cdNeg], 3), cusip, cdNeg)
+            con.commit()
 
