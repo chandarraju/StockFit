@@ -24,6 +24,12 @@ class TweetSearch:
     tweet = ""
     tweetTime = ""
     
+    lastId = 643617375745654785
+    
+    def setLastId(self, lastId):
+        self.lastId = lastId
+        print ("LastID set to", self.lastId)
+    
     def __init__(self):
         self.consumerKey = "4Ioh55KdJtNPtQkQfRqXoTw7L"
         self.consumerSecret = "TJjIfThmPwzDLYx1y6zMIFGe6kBFPVA9FYZxfgVtc9YHfq4J4N"
@@ -39,11 +45,18 @@ class TweetSearch:
     def fetch(self):
         
         api = TwitterAPI(self.consumerKey, self.consumerSecret, self.AccessKey, self.AccessToken, auth_type='oAuth2')
-        r = api.request('search/tweets', {'q': 'AAPL', 'count':10, 'result_type': 'recent'})
+        r = api.request('search/tweets', {'q': 'AAPL', 'count':10, 'result_type': 'recent', 'max_id': self.lastId})
         
         for item in r:
 #            print(item['text'].encode("utf-8") if 'text' in item else item + '\n')
             print(item['id'] if 'text' in item else item + '\n')
+            lastId = item['id']
+        
+        return lastId
 
 allTweets = TweetSearch()
-allTweets.fetch()
+
+for i in range (1, 50):
+    lastId = allTweets.fetch()
+    allTweets.setLastId(lastId)
+    print ("printing ", i, "th set")
