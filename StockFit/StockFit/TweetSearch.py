@@ -3,15 +3,14 @@ Created on Aug 19, 2015
 
 @author: ChandarRaju
 
-This program reads company details from AWS database,
-and for each company, searches tweets from Twitter and puts them to database
+This program searches tweets from Twitter for each company, and puts them to database
 '''
 
 from TwitterAPI import TwitterAPI
 import sys
 import codecs
 
-import _mysql
+from StockFit.Company import Company
 
 class TweetSearch:
     
@@ -24,8 +23,8 @@ class TweetSearch:
     tweet = ""
     tweetTime = ""
     
-    previousLast = 643960505623781376
-    lastId = 643960505623781376
+    previousLast = 643970505623781376
+    lastId = 643970505623781376
     
     def setLastId(self, lastId):
         self.lastId = lastId
@@ -34,14 +33,6 @@ class TweetSearch:
     def __init__(self):
         self.consumerKey = "4Ioh55KdJtNPtQkQfRqXoTw7L"
         self.consumerSecret = "TJjIfThmPwzDLYx1y6zMIFGe6kBFPVA9FYZxfgVtc9YHfq4J4N"
-        
-        con = _mysql.connect('stockfit.ccd1gekitlko.us-west-2.rds.amazonaws.com', 'stockfit', 'stocksfit', 'StockFit')
-        
-        con.query("SELECT distinct cusip from stk_company")
-        result = con.use_result()
-        
-        print (result.fetch_row())
-        
     
     def fetch(self):
         
@@ -68,6 +59,8 @@ class TweetSearch:
             self.lastId = item['id'] - 1
         self.previousLast = temp
         print ("Done upto ", self.previousLast)
+
+company = Company()
 
 allTweets = TweetSearch()
 allTweets.fetch()
