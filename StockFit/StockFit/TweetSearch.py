@@ -7,10 +7,8 @@ This program searches tweets from Twitter for each company, and puts them to dat
 '''
 
 from TwitterAPI import TwitterAPI
-import sys
-import codecs
-
-from StockFit.Company import Company
+#import sys
+#import codecs
 
 class TweetSearch:
     
@@ -59,8 +57,3 @@ class TweetSearch:
             self.lastId = item['id'] - 1
         self.previousLast = temp
         print ("Done upto ", self.previousLast)
-
-company = Company()
-
-allTweets = TweetSearch()
-allTweets.fetch()
